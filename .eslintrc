@@ -26,8 +26,8 @@
     "@typescript-eslint/no-explicit-any": "off",
     "no-param-reassign": "off",
 
-    "max-len": ["error", { "code": 80, "ignoreComments": true }],
-
+    "max-len": "off",
+    "dot-notation": "off",
     // 不要求对 import 进行排序
     "import/order": "off",
 
@@ -67,14 +67,16 @@
     "jsdoc/check-tag-names": "error",
 
     // 不允许出现未使用的 eslint-disable
-    "eslint-comments/no-unused-disable": "error",
+    "eslint-comments/no-unused-disable": "off",
 
     // 允许空箭头函数
     "@typescript-eslint/no-empty-function": [
-      "error", 
+      "error",
       { "allow": ["arrowFunctions"] }
     ],
 
+    "@typescript-eslint/camelcase": "off",
+    "@typescript-eslint/ban-ts-ignore": "off",
     // 允许 import 文件时缺失后缀
     "import/extensions": "off"
   }

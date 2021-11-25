@@ -34,7 +34,8 @@ export const consoleHack = (): void => {
 
       return logger.writeLog(
         "DEBUG",
-        `${util.format(message, ...optionalParams)}`
+        // `${util.format(message, ...optionalParams)}`
+        message
       );
     };
 
@@ -48,7 +49,8 @@ export const consoleHack = (): void => {
 
       return logger.writeLog(
         "DEBUG",
-        `${util.format(message, ...optionalParams)}`
+        // `${util.format(message, ...optionalParams)}`
+        message
       );
     };
 
@@ -62,7 +64,8 @@ export const consoleHack = (): void => {
 
       return logger.writeLog(
         "INFO",
-        `${util.format(message, ...optionalParams)}`
+        // `${util.format(message, ...optionalParams)}`
+        message
       );
     };
 
@@ -93,7 +96,8 @@ export const consoleHack = (): void => {
 
       return logger.writeLog(
         "WARN",
-        `${util.format(message, ...optionalParams)}`
+        // `${util.format(message, ...optionalParams)}`
+        message
       );
     };
 
@@ -107,7 +111,8 @@ export const consoleHack = (): void => {
 
       return logger.writeLog(
         "ERROR",
-        `${util.format(message, ...optionalParams)}`
+        // `${util.format(message, ...optionalParams)}`
+        message
       );
     };
 

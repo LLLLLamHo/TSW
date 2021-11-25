@@ -77,14 +77,15 @@ export const hack = <T extends typeof http.request>(
       captureOutgoing(request);
 
       const context = currentContext() || new Context();
-      const logPre = `[${context.captureSN}]`;
+      const logPre = { capture_sn: context.captureSN };
 
       const {
         method, hostname, path, port
       } = options;
 
-      logger.debug(`${logPre} Request begin. ${
-        method} ${hostname}${port ? `:${port}` : ""} ~ ${path}`);
+      logger.info({
+        ...logPre, log_type: "request_begin", method, hostname, port: port || "", path
+      });
 
       const requestLog: Partial<RequestLog> = {
         SN: context.captureSN,
@@ -110,10 +111,7 @@ export const hack = <T extends typeof http.request>(
 
       const finishRequest = (): void => {
         context.captureRequests.push(requestLog as RequestLog);
-
-        logger.debug(`${logPre} Record request info. Response body length: ${
-          requestLog.responseLength
-        }`);
+        logger.info({ ...logPre, log_type: "record_request", size: requestLog.responseLength });
       };
 
       request.once("socket", (socket: Socket): void => {
@@ -130,46 +128,46 @@ export const hack = <T extends typeof http.request>(
             timestamps.dnsTime = timestamps.onLookUp.getTime()
               - timestamps.onSocket.getTime();
 
-            logger.debug(`${logPre} Dns lookup ${host} -> ${
-              address || "null"}. Cost ${timestamps.dnsTime}ms`);
+            logger.info({
+              ...logPre, log_type: "dns_lookup", host, ip_address: address || "null", cost: timestamps.dnsTime
+            });
 
             if (err) {
               if (logger.getCleanLog()) {
-                logger.error(`${logPre} Request: 
-                ${JSON.stringify(requestLog)}`);
+                logger.error({
+                  ...logPre, log_type: "dns_lookup_error", host, ip_address: address || "null", message: JSON.stringify(requestLog).replace(/[\r\n]/g, "")
+                });
               }
 
-              logger.error(`${logPre} Lookup ${host} -> ${
-                address || "null"}, error ${err.stack}`);
+              logger.error({
+                ...logPre, log_type: "dns_lookup_error", host, ip_address: address || "null", message: err.message.replace(/[\r\n]/g, ""), stack: err.stack.replace(/[\r\n]/g, "")
+              });
             }
           });
         }
 
         socket.once("connect", (): void => {
           timestamps.socketConnect = new Date();
-
-          logger.debug(`${logPre} Socket connected. Remote: ${
-            socket.remoteAddress
-          }:${socket.remotePort}. Cost ${
-            timestamps.socketConnect.getTime() - timestamps.onSocket.getTime()
-          } ms`);
+          logger.info({
+            ...logPre, log_type: "socket_connected", remote: `${socket.remoteAddress}:${socket.remotePort}`, cost: timestamps.socketConnect.getTime() - timestamps.onSocket.getTime()
+          });
         });
 
         if (socket.remoteAddress) {
           timestamps.dnsTime = 0;
-
-          logger.debug(`${logPre} Socket reused. Remote: ${
-            socket.remoteAddress
-          }:${socket.remotePort}`);
+          logger.info({ ...logPre, log_type: "socket_reused", remote: `${socket.remoteAddress}:${socket.remotePort}` });
         }
       });
 
       request.once("error", (error: Error) => {
         if (logger.getCleanLog()) {
-          logger.error(`${logPre} Request: ${JSON.stringify(requestLog)}`);
+          logger.error({ ...logPre, log_type: "request_error", message: JSON.stringify(requestLog).replace(/[\r\n]/g, "") });
         }
 
-        logger.error(`${logPre} Request error. Stack: ${error.stack}`);
+        logger.error({
+          ...logPre, log_type: "request_error", message: error.message.replace(/[\r\n]/g, ""), stack: error.stack.replace(/[\r\n]/g, "")
+        });
+
         finishRequest();
         clearDomain();
       });
@@ -193,11 +191,9 @@ export const hack = <T extends typeof http.request>(
 
         requestLog.requestHeader = (request as any)._header;
         requestLog.requestBody = requestBody;
-        logger.debug(`${logPre} Request send finish. Body size ${
-          length
-        }. Cost: ${
-          timestamps.requestFinish.getTime() - timestamps.onSocket.getTime()
-        } ms`);
+        logger.info({
+          ...logPre, log_type: "request_send_finish", size: length, cost: timestamps.requestFinish.getTime() - timestamps.onSocket.getTime()
+        });
 
         clearDomain();
       });
@@ -213,16 +209,9 @@ export const hack = <T extends typeof http.request>(
         requestLog.clientIp = socket.localAddress;
         requestLog.clientPort = socket.localPort;
 
-        logger.debug(`${logPre} Request on response. Socket chain: ${
-          socket.localAddress
-        }:${socket.localPort} > ${
-          socket.remoteAddress
-        }:${socket.remotePort}. Response status code: ${
-          response.statusCode
-        }. Cost: ${
-          timestamps.onResponse.getTime()
-      - timestamps.onSocket.getTime()
-        } ms`);
+        logger.info({
+          ...logPre, log_type: "request_result_start", chain: `${socket.localAddress}:${socket.localPort}`, remote: `${socket.remoteAddress}:${socket.remotePort}`, cost: timestamps.onResponse.getTime() - timestamps.onSocket.getTime()
+        });
 
         // responseInfo can't retrieve data until response "end" event
         const responseInfo = captureIncoming(response);
@@ -259,12 +248,9 @@ export const hack = <T extends typeof http.request>(
 
           requestLog.responseBody = responseInfo.body.toString("base64");
 
-          logger.debug(`${logPre} Response on end. Body size：${
-            requestLog.responseLength
-          }. Cost: ${
-            timestamps.responseClose.getTime()
-        - timestamps.onSocket.getTime()
-          } ms`);
+          logger.info({
+            ...logPre, log_type: "request_result_end", chain: `${socket.localAddress}:${socket.localPort}`, remote: `${socket.remoteAddress}:${socket.remotePort}`, size: requestLog.responseLength, cost: timestamps.responseClose.getTime() - timestamps.onSocket.getTime()
+          });
 
           finishRequest();
         });
@@ -281,11 +267,9 @@ export const requestHack = (): void => {
   if (!hacked) {
     originHttpRequest = http.request;
     originHttpsRequest = https.request;
-    // eslint-disable-next-line
     // @ts-ignore
     // By default, ts not allow us to rewrite original methods.
     http.request = hack(http.request, "http:");
-    // eslint-disable-next-line
     // @ts-ignore
     // By default, ts not allow us to rewrite original methods.
     https.request = hack(https.request, "https:");

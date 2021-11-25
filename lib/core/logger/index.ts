@@ -9,6 +9,7 @@
 import * as moment from "moment";
 import * as chalk from "chalk";
 import * as path from "path";
+import * as util from "util";
 
 import currentContext, { Log } from "../context";
 import isLinux from "../util/isLinux";
@@ -55,8 +56,9 @@ export class Logger {
     return this.isCleanLog;
   }
 
-  public debug(str: string): void {
+  public debug(str: string|object): void {
     if (this.isCleanLog) return;
+
     if (!currentContext()) {
       console.log(Logger.formatStr(str, "DEBUG", {
         levelLimit: this.logLevel
@@ -66,8 +68,9 @@ export class Logger {
     }
   }
 
-  public info(str: string): void {
+  public info(str: string|object): void {
     if (this.isCleanLog) return;
+
     if (!currentContext()) {
       console.info(Logger.formatStr(str, "INFO", {
         levelLimit: this.logLevel
@@ -77,7 +80,7 @@ export class Logger {
     }
   }
 
-  public warn(str: string): void {
+  public warn(str: string|object): void {
     if (!currentContext()) {
       console.warn(Logger.formatStr(str, "WARN", {
         levelLimit: this.logLevel
@@ -87,7 +90,7 @@ export class Logger {
     }
   }
 
-  public error(str: string): void {
+  public error(str: string|object): void {
     if (!currentContext()) {
       console.error(Logger.formatStr(str, "ERROR", {
         levelLimit: this.logLevel
@@ -105,7 +108,7 @@ export class Logger {
     }
   }
 
-  public writeLog(type: LogLevelStrings, str: string): void {
+  public writeLog(type: LogLevelStrings, str: string | object): void {
     const level = LOG_LEVEL[type];
 
     // Drop log
@@ -152,8 +155,8 @@ export class Logger {
    */
   private static getWinstonType(type: LogLevelStrings): WinstonLogLevel {
     const logType = type.toLowerCase();
-    const winstonLogLevel = winstonConfig.syslog.levels;
-    if (winstonLogLevel[logType]) {
+    const winstonLogLevel = winstonConfig.npm.levels; // winston内部使用的是npm levels
+    if (winstonLogLevel[logType] != null) {
       return logType;
     }
 
@@ -173,7 +176,7 @@ export class Logger {
    * @param options.color Add ANSI color or not
    */
   private static formatStr(
-    str: string,
+    str: string | object,
     type: LogLevelStrings,
     options: {
       levelLimit: number;
@@ -181,6 +184,14 @@ export class Logger {
     }
   ): string {
     const { levelLimit, color } = options;
+
+    if (Object.prototype.toString.call(str) === "[object String]") {
+      str = { log_type: type.toLocaleLowerCase(), message: str };
+    }
+
+    if (!str["log_type"]) {
+      str["log_type"] = type.toLocaleLowerCase();
+    }
 
     let showLineNumber = false;
     let SN = -1;
@@ -207,7 +218,7 @@ export class Logger {
       // ./lib/core/runtime/console.hack.js [console.log]
       // User called here
       const { column, line, filename } = getCallInfo(5);
-      return `[${filename.split(path.sep).join("/")}:${line}:${column}]`;
+      return `${filename.split(path.sep).join("/")}:${line}:${column}`;
     })();
 
     if (color) {
@@ -217,7 +228,15 @@ export class Logger {
       } ${chalk.blueBright(callInfo)} ${str}`;
     }
 
-    return `${timestamp} ${logType} ${pidInfo} ${callInfo} ${str}`;
+    return util.format({
+      level: type.toLocaleLowerCase(),
+      timestamp,
+      pid: process.pid,
+      sn: SN,
+      call_info: callInfo,
+      // @ts-ignore
+      ...str
+    }).replace(/[\r\n]/g, "");
   }
 
   private static getLog(): Log | undefined {

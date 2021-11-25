@@ -1,6 +1,6 @@
 {
-  "name": "@tswjs/tsw",
-  "version": "2.0.0-alpha.10",
+  "name": "tsw",
+  "version": "0.0.1",
   "description": "A Node.js infrastructure which is designed for improving the efficiency of locating problems, providing multiple functions for front-end developers",
   "main": "dist/index.js",
   "bin": "dist/cli.js",
@@ -65,6 +65,7 @@
     "chalk": "^3.0.0",
     "ip": "^1.1.5",
     "lodash": "^4.17.15",
+    "logform": "^2.2.0",
     "moment": "^2.24.0",
     "patch-package": "^6.2.2",
     "postinstall-postinstall": "^2.1.0",

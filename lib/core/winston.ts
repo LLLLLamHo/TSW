@@ -8,12 +8,17 @@
 
 import * as winston from "winston";
 import logger from "./logger/index";
+import { format } from "logform";
+
+const { combine } = format;
 
 export const winstonHack = (): void => {
   const { winstonTransports: transports } = global.tswConfig;
   if (Array.isArray(transports) && transports.length) {
     logger.winstonLogger = winston.createLogger({
-      format: winston.format.simple(),
+      format: combine(
+        format.printf((info) => info.message)
+      ),
       transports
     });
   }
