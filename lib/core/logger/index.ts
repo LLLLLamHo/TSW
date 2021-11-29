@@ -9,7 +9,6 @@
 import * as moment from "moment";
 import * as chalk from "chalk";
 import * as path from "path";
-import * as util from "util";
 
 import currentContext, { Log } from "../context";
 import isLinux from "../util/isLinux";
@@ -228,7 +227,7 @@ export class Logger {
       } ${chalk.blueBright(callInfo)} ${str}`;
     }
 
-    return util.format({
+    return JSON.stringify({
       level: type.toLocaleLowerCase(),
       timestamp,
       pid: process.pid,
