@@ -29,6 +29,12 @@ declare namespace NodeJS {
       winstonTransports?: any[];
       cleanLog?: boolean;
       logLevel?: "DEBUG" | "INFO" | "WARN" | "ERROR";
+      disableLog?: boolean;
+      disableConsole?: boolean;
+      commonLogData?: CommonLogData;
     };
+  }
+  interface CommonLogData {
+    [propName: string]: any;
   }
 }

@@ -40,7 +40,27 @@ export class Logger {
 
   public logLevel: number
 
+  public dsableLog = false
+  public dsableConsole = false
+
   public winstonLogger: WinstonLogger
+
+  public privateLog: {[propsName: string]: any}
+
+  public setPrivateLog(data: {[propsName: string]: any}): {[propsName: string]: any} {
+    this.privateLog = data;
+    return this.privateLog;
+  }
+
+  public setDsableConsole(dsableConsole: boolean): boolean {
+    this.dsableConsole = dsableConsole;
+    return this.dsableConsole;
+  }
+
+  public setDsableLog(dsableLog: boolean): boolean {
+    this.dsableLog = dsableLog;
+    return this.dsableLog;
+  }
 
   public setLogLevel(level: LogLevelStrings = "DEBUG"): number {
     this.logLevel = LOG_LEVEL[level];
@@ -115,6 +135,20 @@ export class Logger {
       return;
     }
 
+    if (Object.prototype.toString.call(str) === "[object String]") {
+      str = { log_type: type.toLocaleLowerCase(), message: str };
+    }
+
+    if (!str["log_type"]) {
+      str["log_type"] = type.toLocaleLowerCase();
+    }
+
+    if (!str["sub_log_type"]) {
+      str["sub_log_type"] = "console";
+    }
+
+    str = Object.assign(str, this.privateLog);
+
     const logStr = Logger.formatStr(str, type, {
       levelLimit: this.logLevel
     });
@@ -122,7 +156,7 @@ export class Logger {
     // Store log
     Logger.fillBuffer(type, logStr);
 
-    if (this.winstonLogger) {
+    if (!this.dsableLog && this.winstonLogger) {
       const winstonLogType = Logger.getWinstonType(type);
       this.winstonLogger.log(`${winstonLogType}`, logStr);
     }
@@ -141,8 +175,10 @@ export class Logger {
       });
 
       // Here for local stdout, with color
+      if (this.dsableConsole) return;
       Logger.fillStdout(logWithColor);
     } else {
+      if (this.dsableConsole) return;
       // Send to local stdout
       Logger.fillStdout(logStr);
     }
@@ -184,14 +220,6 @@ export class Logger {
   ): string {
     const { levelLimit, color } = options;
 
-    if (Object.prototype.toString.call(str) === "[object String]") {
-      str = { log_type: type.toLocaleLowerCase(), message: str };
-    }
-
-    if (!str["log_type"]) {
-      str["log_type"] = type.toLocaleLowerCase();
-    }
-
     let showLineNumber = false;
     let SN = -1;
 
@@ -230,7 +258,6 @@ export class Logger {
     return JSON.stringify({
       level: type.toLocaleLowerCase(),
       timestamp,
-      pid: process.pid,
       sn: SN,
       call_info: callInfo,
       // @ts-ignore

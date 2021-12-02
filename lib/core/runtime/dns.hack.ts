@@ -54,14 +54,16 @@ export const dnsHack = (): void => {
             ? optionsOrCallback
             : callbackOrUndefined;
 
-          logger.info({ log_type: "dns_lookup_info", hostname });
+          // logger.info({ log_type: "dns_lookup_info", hostname });
 
           // For http.request, if host is a ip
           // It will not entry dns.lookup by default
           // https://github.com/nodejs/node/blob/master/lib/net.js#L1002
           // But still need this, in case use call dns.lookup directly
           if (net.isIP(hostname)) {
-            logger.info({ log_type: "dns_lookup_info", hostname });
+            logger.info({
+              log_type: "dns", sub_log_type: "dns_ip", hostname, message: "host is a ip, no entry dns"
+            });
 
             if (options) {
               return lookup.apply(this, [hostname, options, callback]);
@@ -88,13 +90,13 @@ export const dnsHack = (): void => {
             const cost = Date.now() - start;
             if (!err) {
               logger.info({
-                log_type: "dns_lookup_start", cost, hostname, address
+                log_type: "dns", sub_log_type: "dns_success", cost, hostname, address
               });
 
               eventBus.emit(EVENT_LIST.DNS_LOOKUP_SUCCESS, address);
             } else {
               logger.error({
-                log_type: "dns_lookup_error", cost, hostname, address, message: err.message.replace(/[\r\n]/g, ""), stack: err.stack.replace(/[\r\n]/g, "")
+                log_type: "dns", sub_log_type: "dns_error", cost, hostname, address, message: err.message.replace(/[\r\n]/g, ""), stack: err.stack.replace(/[\r\n]/g, "")
               });
 
               eventBus.emit(EVENT_LIST.DNS_LOOKUP_ERROR, err);

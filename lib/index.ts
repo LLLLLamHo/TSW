@@ -11,6 +11,7 @@ import { requestHack, requestRestore } from "./core/runtime/capture/index";
 import { winstonHack, winstonRestore } from "./core/winston";
 import { eventBus } from "./core/bus";
 import logger from "./core/logger";
+import initPrivateData from "./core/util/privateLog";
 
 export const installHacks = (): void => {
   httpCreateServerHack();
@@ -37,9 +38,12 @@ export default async (
 ): Promise<void> => {
   const configAbsolutePath = path.resolve(basePath, configPath);
   global.tswConfig = await import(configAbsolutePath);
-
+  const privateLog = initPrivateData();
   logger.setCleanLog(global.tswConfig.cleanLog);
   logger.setLogLevel(global.tswConfig.logLevel);
+  logger.setDsableLog(global.tswConfig.disableLog);
+  logger.setDsableConsole(global.tswConfig.disableConsole);
+  logger.setPrivateLog(privateLog);
 
   if (global.tswConfig.plugins) {
     // eslint-disable-next-line no-restricted-syntax
