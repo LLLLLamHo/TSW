@@ -59,5 +59,7 @@ export default async (
   }
 
   installHacks();
-  await import(path.resolve(basePath, mainPath));
+  if (basePath && mainPath) {
+    await import(path.resolve(basePath, mainPath));
+  }
 };
