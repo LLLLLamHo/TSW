@@ -117,42 +117,42 @@ export const consoleHack = (): void => {
     };
 
     // hack process._stdout
-    (process.stdout as any).originWrite = process.stdout.write;
-    process.stdout.write = (
-      data: Buffer | string,
-      encodingOrCallback?: string | ((err?: Error) => void) | undefined
-    ): boolean => {
-      let encoding: BufferEncoding;
-      if (typeof encodingOrCallback !== "function") {
-        encoding = encodingOrCallback as BufferEncoding;
-      }
+    // (process.stdout as any).originWrite = process.stdout.write;
+    // process.stdout.write = (
+    //   data: Buffer | string,
+    //   encodingOrCallback?: string | ((err?: Error) => void) | undefined
+    // ): boolean => {
+    //   let encoding: BufferEncoding;
+    //   if (typeof encodingOrCallback !== "function") {
+    //     encoding = encodingOrCallback as BufferEncoding;
+    //   }
 
-      logger.writeLog(
-        "DEBUG",
-        data.toString(encoding).replace(/\n$/, "") // 去掉换行符
-      );
+    //   logger.writeLog(
+    //     "DEBUG",
+    //     data.toString(encoding).replace(/\n$/, "") // 去掉换行符
+    //   );
 
-      return true;
-    };
+    //   return true;
+    // };
 
-    // hack process._stderr
-    (process.stderr as any).originWrite = process.stderr.write;
-    process.stderr.write = (
-      data: Buffer | string,
-      encodingOrCallback?: string | ((err?: Error) => void) | undefined
-    ): boolean => {
-      let encoding: BufferEncoding;
-      if (typeof encodingOrCallback !== "function") {
-        encoding = encodingOrCallback as BufferEncoding;
-      }
+    // // hack process._stderr
+    // (process.stderr as any).originWrite = process.stderr.write;
+    // process.stderr.write = (
+    //   data: Buffer | string,
+    //   encodingOrCallback?: string | ((err?: Error) => void) | undefined
+    // ): boolean => {
+    //   let encoding: BufferEncoding;
+    //   if (typeof encodingOrCallback !== "function") {
+    //     encoding = encodingOrCallback as BufferEncoding;
+    //   }
 
-      logger.writeLog(
-        "ERROR",
-        data.toString(encoding).replace(/\n$/, "") // 去掉换行符
-      );
+    //   logger.writeLog(
+    //     "ERROR",
+    //     data.toString(encoding).replace(/\n$/, "") // 去掉换行符
+    //   );
 
-      return true;
-    };
+    //   return true;
+    // };
   }
 };
 

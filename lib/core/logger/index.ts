@@ -135,7 +135,7 @@ export class Logger {
       return;
     }
 
-    if (Object.prototype.toString.call(str) === "[object String]") {
+    if (Object.prototype.toString.call(str) !== "[object Object]") {
       str = { log_type: type.toLocaleLowerCase(), message: str };
     }
 
