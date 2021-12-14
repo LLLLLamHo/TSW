@@ -35,7 +35,7 @@ export default async (
   basePath: string,
   mainPath: string,
   configPath: string
-): Promise<void> => {
+): Promise<any> => {
   const configAbsolutePath = path.resolve(basePath, configPath);
   global.tswConfig = await import(configAbsolutePath);
   const privateLog = initPrivateData();
@@ -62,4 +62,6 @@ export default async (
   if (basePath && mainPath) {
     await import(path.resolve(basePath, mainPath));
   }
+
+  return logger;
 };
