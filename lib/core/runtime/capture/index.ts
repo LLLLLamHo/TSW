@@ -121,7 +121,9 @@ export const hack = <T extends typeof http.request>(
 
       const finishRequest = (): void => {
         context.captureRequests.push(requestLog as RequestLog);
-        logger.info({ ...logPre, log_type: "record_request", size: requestLog.responseLength });
+        logger.info({
+          ...logPre, log_type: "http", sub_log_type: "record_request", size: requestLog.responseLength
+        });
       };
 
       request.once("socket", (socket: Socket): void => {

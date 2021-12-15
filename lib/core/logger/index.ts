@@ -140,7 +140,7 @@ export class Logger {
     }
 
     if (!str["log_type"]) {
-      str["log_type"] = type.toLocaleLowerCase();
+      str["log_type"] = str["log_type"] || type.toLocaleLowerCase();
     }
 
     if (!str["sub_log_type"]) {
