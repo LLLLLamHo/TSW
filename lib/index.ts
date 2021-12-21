@@ -17,7 +17,7 @@ export const installHacks = (): void => {
   httpCreateServerHack();
   httpsCreateServerHack();
   dnsHack();
-  consoleHack();
+  // consoleHack();
   requestHack();
   winstonHack();
 };
@@ -26,7 +26,7 @@ export const uninstallHacks = (): void => {
   httpCreateServerRestore();
   httpsCreateServerRestore();
   dnsRestore();
-  consoleRestore();
+  // consoleRestore();
   requestRestore();
   winstonRestore();
 };

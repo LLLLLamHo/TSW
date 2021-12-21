@@ -79,7 +79,7 @@ export const hack = <T extends typeof http.request>(
       const context = currentContext() || new Context();
 
       const {
-        method, hostname, path, port
+        method, hostname, path, port, headers
       } = options;
 
       const logPre = {
@@ -88,6 +88,8 @@ export const hack = <T extends typeof http.request>(
         hostname,
         port: port || "NULL",
         protocol: protocol === "http:" ? "HTTP" : "HTTPS",
+        request_header: Object.prototype.toString.call(headers) === "[object Object]" ? JSON.stringify(headers) : headers,
+        request_url: path.split("?")[0],
         path
       };
 
